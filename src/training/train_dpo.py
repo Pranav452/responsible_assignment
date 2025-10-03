@@ -189,6 +189,8 @@ def main(config_path):
     # Update training args with DPO-specific parameters
     training_args.beta = config.get('beta', 0.1)
     training_args.loss_type = config.get('loss_type', 'sigmoid')
+    training_args.max_length = config.get('max_seq_length', 2048)
+    training_args.max_prompt_length = config.get('max_seq_length', 2048) // 2
     
     dpo_trainer = DPOTrainer(
         model=model,
@@ -197,8 +199,6 @@ def main(config_path):
         train_dataset=train_dataset,
         processing_class=tokenizer,
         peft_config=peft_config,
-        max_length=config.get('max_seq_length', 2048),
-        max_prompt_length=config.get('max_seq_length', 2048) // 2,
     )
 
     print("Starting DPO training...")
