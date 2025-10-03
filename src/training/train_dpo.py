@@ -15,6 +15,7 @@ import os
 import wandb
 import time
 from dotenv import load_dotenv
+from src.utils.chat_templates import LLAMA3_CHAT_TEMPLATE
 
 load_dotenv()
 
@@ -78,6 +79,9 @@ def main(config_path):
     tokenizer = AutoTokenizer.from_pretrained(config['model_name'])
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+    
+    # Set chat template for Llama-3
+    tokenizer.chat_template = LLAMA3_CHAT_TEMPLATE
     
     # Load base model with quantization
     print("Loading base model with 4-bit quantization...")
