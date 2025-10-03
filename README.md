@@ -66,7 +66,7 @@ python src/evaluation/compare_results.py \
 
 **GPU:** `watch -n 1 nvidia-smi`
 
-**W&B:** https://wandb.ai/pranavnairop090-misogi/Responsible-AI-Alignment-A100-please
+**W&B:** https://wandb.ai/pranavnairop090-misogi/Responsible-AI-Alignment-A100-please-final
 
 ---
 

@@ -11,7 +11,7 @@ num_eval_samples: 100
 
 # Output Configuration
 output_dir: "./models/llama3-qlora-adapter"
-wandb_project: "Responsible-AI-Alignment-A100-please"
+wandb_project: "Responsible-AI-Alignment-A100-please-final"
 
 # Training Hyperparameters (Optimized for A100 40GB)
 num_train_epochs: 2

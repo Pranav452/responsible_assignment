@@ -10,7 +10,7 @@ num_train_samples: 5000
 
 # Output Configuration
 output_dir: "./models/llama3-dpo-adapter"
-wandb_project: "Responsible-AI-Alignment-A100-please"
+wandb_project: "Responsible-AI-Alignment-A100-please-final"
 
 # DPO Training Hyperparameters (Optimized for A100 40GB)
 num_train_epochs: 1
