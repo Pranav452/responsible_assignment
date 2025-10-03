@@ -191,7 +191,7 @@ def main(config_path):
         ref_model=None,  # Use implicit reference model
         args=training_args,
         train_dataset=train_dataset,
-        tokenizer=tokenizer,
+        processing_class=tokenizer,  # Use processing_class instead of tokenizer
         peft_config=peft_config,
         beta=config.get('beta', 0.1),
         loss_type=config.get('loss_type', 'sigmoid'),
