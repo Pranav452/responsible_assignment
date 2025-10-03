@@ -191,6 +191,8 @@ def main(config_path):
     training_args.loss_type = config.get('loss_type', 'sigmoid')
     training_args.max_length = config.get('max_seq_length', 2048)
     training_args.max_prompt_length = config.get('max_seq_length', 2048) // 2
+    training_args.padding_value = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
+    training_args.truncation_mode = 'keep_end'
     
     dpo_trainer = DPOTrainer(
         model=model,
