@@ -72,6 +72,10 @@ def main(config_path):
         dtype=None,
         load_in_4bit=True,
     )
+    
+    # Set chat template for Llama-3
+    from src.utils.chat_templates import LLAMA3_CHAT_TEMPLATE
+    tokenizer.chat_template = LLAMA3_CHAT_TEMPLATE
 
     print("Configuring LoRA adapters...")
     model = FastLanguageModel.get_peft_model(
