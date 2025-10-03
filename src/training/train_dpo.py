@@ -8,7 +8,7 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, TrainingArguments
 from peft import LoraConfig, get_peft_model, PeftModel
 from datasets import load_dataset
-from trl import DPOTrainer
+from trl import DPOTrainer, DPOConfig
 import yaml
 import argparse
 import os
@@ -132,32 +132,10 @@ def main(config_path):
     
     print(f"Training on {len(train_dataset)} samples")
 
-    # Training arguments
+    # Calculate total steps
     total_steps = (len(train_dataset) // 
                    (config['per_device_train_batch_size'] * 
                     config['gradient_accumulation_steps'])) * config['num_train_epochs']
-    
-    training_args = TrainingArguments(
-        output_dir="./outputs/dpo",
-        num_train_epochs=config['num_train_epochs'],
-        per_device_train_batch_size=config['per_device_train_batch_size'],
-        gradient_accumulation_steps=config['gradient_accumulation_steps'],
-        learning_rate=config['learning_rate'],
-        warmup_steps=config.get('warmup_steps', 10),
-        logging_steps=10,
-        save_strategy="steps",
-        save_steps=max(total_steps // 5, 50),
-        save_total_limit=2,
-        fp16=False,
-        bf16=True,
-        optim="adamw_8bit",
-        lr_scheduler_type="cosine",
-        max_grad_norm=config.get('max_grad_norm', 1.0),
-        report_to="wandb",
-        logging_first_step=True,
-        eval_strategy="no",
-        seed=3407
-    )
     
     # Initialize W&B
     wandb.init(
@@ -184,20 +162,41 @@ def main(config_path):
     print(f"Total steps: {total_steps}")
     print(f"{'='*80}\n")
 
+    # Create DPO config
+    dpo_config = DPOConfig(
+        output_dir="./outputs/dpo",
+        num_train_epochs=config['num_train_epochs'],
+        per_device_train_batch_size=config['per_device_train_batch_size'],
+        gradient_accumulation_steps=config['gradient_accumulation_steps'],
+        learning_rate=config['learning_rate'],
+        warmup_steps=config.get('warmup_steps', 10),
+        logging_steps=10,
+        save_strategy="steps",
+        save_steps=max(total_steps // 5, 50),
+        save_total_limit=2,
+        fp16=False,
+        bf16=True,
+        optim="adamw_8bit",
+        lr_scheduler_type="cosine",
+        max_grad_norm=config.get('max_grad_norm', 1.0),
+        report_to="wandb",
+        logging_first_step=True,
+        eval_strategy="no",
+        seed=3407,
+        beta=config.get('beta', 0.1),
+        loss_type=config.get('loss_type', 'sigmoid'),
+        max_length=config.get('max_seq_length', 2048),
+        max_prompt_length=config.get('max_seq_length', 2048) // 2,
+        padding_value=tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0,
+        truncation_mode='keep_end'
+    )
+
     # Initialize DPO Trainer
     print("Initializing DPO trainer...")
-    # Update training args with DPO-specific parameters
-    training_args.beta = config.get('beta', 0.1)
-    training_args.loss_type = config.get('loss_type', 'sigmoid')
-    training_args.max_length = config.get('max_seq_length', 2048)
-    training_args.max_prompt_length = config.get('max_seq_length', 2048) // 2
-    training_args.padding_value = tokenizer.pad_token_id if tokenizer.pad_token_id is not None else 0
-    training_args.truncation_mode = 'keep_end'
-    
     dpo_trainer = DPOTrainer(
         model=model,
         ref_model=None,  # Use implicit reference model
-        args=training_args,
+        args=dpo_config,
         train_dataset=train_dataset,
         processing_class=tokenizer,
         peft_config=peft_config,
@@ -232,4 +231,3 @@ if __name__ == "__main__":
     parser.add_argument("--config", type=str, default="configs/dpo_config.yaml")
     args = parser.parse_args()
     main(args.config)
-
